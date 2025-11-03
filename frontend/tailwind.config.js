@@ -1,3 +1,4 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./index.html",
@@ -7,6 +8,6 @@ module.exports = {
     extend: {},
   },
   plugins: [
-    require('@tailwindcss/forms'),
+    require('@tailwindcss/forms'), // <-- Ini akan berfungsi setelah diinstall
   ],
 }
