@@ -1,8 +1,33 @@
 <script setup lang="ts">
-import Header from '../components/Header.vue'
-import RequestEditor from '../components/RequestEditor.vue'
-import ResponseViewer from '../components/ResponseViewer.vue'
-import RecommendationBox from '../components/RecommendationBox.vue'
+import { ref } from 'vue';
+import Header from '../components/Header.vue';
+import RequestEditor from '../components/RequestEditor.vue';
+import ResponseViewer from '../components/ResponseViewer.vue';
+import RecommendationBox from '../components/RecommendationBox.vue';
+import { sendRequestToBackend } from '../services/requestClient';
+import type { ParsedRequest } from '../utils/requestParser';
+
+// --- State Aplikasi ---
+const currentResponse = ref<any | null>(null);
+const aiRecommendation = ref<string>('Menunggu request pertama...');
+const isLoading = ref(false); // Untuk indikator loading
+
+/**
+ * Handler utama saat RequestEditor mengirim event 'send-request'
+ */
+async function handleRequest(request: ParsedRequest) {
+    isLoading.value = true;
+    currentResponse.value = null; // Reset tampilan
+    aiRecommendation.value = 'Mengirim request ke target dan menganalisis AI... 🤖';
+
+    // Panggil service yang call backend
+    const result = await sendRequestToBackend(request);
+
+    // Update state dengan data dari backend
+    currentResponse.value = result.response;
+    aiRecommendation.value = result.recommendation;
+    isLoading.value = false;
+}
 </script>
 
 <template>
@@ -11,20 +36,16 @@ import RecommendationBox from '../components/RecommendationBox.vue'
     
     <div class="flex flex-grow overflow-hidden">
       <div class="w-1/2 border-r border-gray-700">
-        <RequestEditor />
+        <RequestEditor @send-request="handleRequest" />
       </div>
       
       <div class="w-1/2">
-        <ResponseViewer />
+        <ResponseViewer :response="currentResponse" :loading="isLoading" />
       </div>
     </div>
 
     <div class="h-1/4 max-h-[300px] min-h-[150px] border-t border-gray-700">
-      <RecommendationBox />
+      <RecommendationBox :recommendation="aiRecommendation" :loading="isLoading" />
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Optional: Tambahkan styling khusus jika diperlukan, tapi Tailwind sudah cukup untuk ini */
-</style>
